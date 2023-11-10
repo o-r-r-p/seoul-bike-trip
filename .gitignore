@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+eda.ipynb
 # C extensions
 *.so
 
@@ -25,6 +25,11 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+data/
+notebooks/models/
+
+notebooks/.Trash-0/
+notebooks/.virtual_documents/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

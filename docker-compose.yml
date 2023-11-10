@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  soul_bike_trip_analysis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+      - ./scripts:/app/scripts
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    working_dir: /app
+    command: ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
