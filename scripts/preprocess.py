@@ -3,6 +3,8 @@ import polars as pl
 import numpy as np
 import datetime as dt
 
+from typing import Dict, List, Tuple
+
 
 def reduce_mem_usage(df: pl.LazyFrame) -> pl.LazyFrame:
     """iterate through all numeric columns of a dataframe
@@ -80,4 +82,38 @@ def feature_engineering(df: pl.DataFrame) -> pl.DataFrame:
     )
     df = df.drop(["duration", "Ddatetime", "Pdatetime"])
 
+    # exp4: add column(Usage_time / Distance)
+    df = df.with_columns(
+        (pl.col("Distance") / pl.col("Usage_time")).alias("Velocity")  # exp4
+    )
+
     return df
+
+
+def feature_agg_temp(
+    train: pd.DataFrame, test: pd.DataFrame
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    # exp3 Tempの統計情報を追加
+    agg_df = train.groupby(["Pmonth", "Phour"])["Temp"].agg({"mean", "min", "max"})
+    agg_df = agg_df.reset_index().rename(
+        columns={"max": "Temp_max", "min": "Temp_min", "mean": "Temp_mean"}
+    )
+    train = pd.merge(train, agg_df, on=["Pmonth", "Phour"], how="inner")
+    test = pd.merge(test, agg_df, on=["Pmonth", "Phour"], how="inner")
+
+    # exp5 出発・終着点のDuration平均と中央値を追加
+    agg_df = (
+        train[["Duration", "PLatd", "PLong", "DLatd", "DLong"]]
+        .groupby(["PLatd", "PLong", "DLatd", "DLong"])["Duration"]
+        .agg({"mean", "median"})
+    )
+    agg_df = agg_df.reset_index().rename(
+        columns={"mean": "Duratioin_mean", "median": "Duration_meadian"}
+    )
+
+    train = pd.merge(
+        train, agg_df, on=["PLatd", "PLong", "DLatd", "DLong"], how="inner"
+    )
+    test = pd.merge(test, agg_df, on=["PLatd", "PLong", "DLatd", "DLong"], how="inner")
+
+    return train, test
